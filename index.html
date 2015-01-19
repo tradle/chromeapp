@@ -1,0 +1,19 @@
+<html>
+  <head>
+  	<title>
+  		<!-- @echo APP_TITLE -->
+  	</title>
+  	<link rel="stylesheet" href="bundle.css"></link>
+  </head>
+  <body>
+    <webview id="webview" src="<!-- @echo APP_HOME -->"></webview> 
+
+    <!-- @if DEBUG -->
+
+      <!-- @include navbar.html -->
+
+    <!-- @endif -->
+
+    <script src="bundle.js"></script>
+  </body>
+</html>
