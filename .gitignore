@@ -27,7 +27,5 @@ node_modules
 # Users Environment Variables
 .lock-wscript
 
-app/bundle.*
-app/index.html
 *.sublime-*
 node_modules
