@@ -1,0 +1,6 @@
+{
+  "torrentPort": 9000,
+  "dhtPort":  7000,
+  "private": true,
+  "storage": "storage"
+}

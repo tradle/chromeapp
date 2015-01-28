@@ -1,0 +1,12 @@
+{
+  "wallet": {
+    "autosave": true,
+    "path": "wallet/wallet.wallet",
+    "password": "changeme"
+  },
+  "prefix": "tradle",
+  "maxDataBytes": 40,
+  "networkName": "testnet",
+  "minConf": 0,
+  "syncInterval": 60000
+}

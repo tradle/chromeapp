@@ -17,9 +17,10 @@ module.exports = function (grunt) {
   grunt.registerTask('default', [
     'preprocess',
     'concat',
-    'browserify',
-    'copy:app',
-    'renameCopy'
+    'browserify'
+    // ,
+    // 'copy:app',
+    // 'renameCopy'
   ]);
 
   grunt.registerTask('renameCopy', function () {
@@ -45,7 +46,7 @@ module.exports = function (grunt) {
       .require('browser-request', {
         expose: 'request'
       })
-      .require('./lib/dns.js', {
+      .require('dns.js', {
         expose: 'dns'
       })
       // .transform('brfs')

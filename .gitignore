@@ -1,2 +1,4 @@
 app/bundle.*
 app/index.html
+*.sublime-*
+node_modules
