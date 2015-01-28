@@ -14,7 +14,7 @@
     "dgram": "chrome-dgram",
     "net": "chrome-net",
     "request": "browser-request",
-    "dns": "./lib/dns.js"
+    "dns": "dns.js"
   },
   "dependencies": {
     "bitjoe-js": "git://github.com/tradle/bitjoe-js",
@@ -39,7 +39,6 @@
     "load-grunt-tasks": "^2.0.0",
     "preprocess": "^2.1.0"
   },
-  "homepage": "http://webtorrent.io",
   "keywords": [
     "bitcoin",
     "blockchain",
