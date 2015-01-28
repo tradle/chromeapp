@@ -46,7 +46,7 @@ module.exports = function (grunt) {
       .require('browser-request', {
         expose: 'request'
       })
-      .require('dns.js', {
+      .require('./lib/dns.js', {
         expose: 'dns'
       })
       // .transform('brfs')
