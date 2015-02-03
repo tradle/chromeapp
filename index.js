@@ -3,6 +3,10 @@ var myWin;
 var runtimeId = chrome.runtime.id;
 var controller = require('./lib/controller');
 var channelId;
+var width = screen.availWidth;
+var height = screen.availHeight;
+var left = 0;
+var top = 0;
 
 var ls = chrome.storage.local;
 window.localStorage = {
@@ -12,16 +16,41 @@ window.localStorage = {
   clear: ls.clear.bind(ls)
 }
 
+function resize() {
+  // width = width === screen.availWidth ? --width : ++width;
+  // height = height === screen.availHeight ? --height : ++height;
+  myWin.resizeTo(width, height);
+  myWin.moveTo(left, top);
+}
+
+function pulseResize() {
+  // chrome has a weird bug with opacity 0.99999 + transforms, and resizing fixes the stacking contexts once and for all
+  console.log('Pulse resizing');
+  width--;
+  height--;
+  resize();
+  width++;
+  height++;
+  resize();
+}
+
 function runApp() {
   // Do the normal setup steps every time the app starts, listen for events.
   // setupPush();
   chrome.app.window.create('index.html', {
-    'bounds': {
-      'width': 1024,
-      'height': 768
+    outerBounds: {
+      width: width,
+      height: height,
+      top: top,
+      left: left
     }
   }, function (window) {
     myWin = window;
+    resize();
+    var pulse = setInterval(pulseResize, 1000);
+    setTimeout(function () {
+      clearInterval(pulse);
+    }, 10000);
   });
 
   chrome.pushMessaging.getChannelId(true, function (message) {
