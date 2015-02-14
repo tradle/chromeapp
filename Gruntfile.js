@@ -14,7 +14,9 @@ module.exports = function (grunt) {
     'githooks'
   ]);
 
-  grunt.registerTask('default', [
+  grunt.registerTask('default', ['build']);
+
+  grunt.registerTask('build', [
     'preprocess',
     'concat',
     'browserify'

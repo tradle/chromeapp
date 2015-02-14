@@ -1,6 +1,5 @@
 var mkdirp = require('mkdirp');
 var myWin;
-var runtimeId = chrome.runtime.id;
 var controller = require('./lib/controller');
 var channelId;
 var width = screen.availWidth;
@@ -16,11 +15,13 @@ window.localStorage = {
   clear: ls.clear.bind(ls)
 }
 
+function init() {
+  chrome.app.runtime.onLaunched.addListener(runApp);
+  chrome.app.runtime.onRestarted.addListener(runApp);
+}
+
 function resize() {
-  // width = width === screen.availWidth ? --width : ++width;
-  // height = height === screen.availHeight ? --height : ++height;
   myWin.resizeTo(width, height);
-  myWin.moveTo(left, top);
 }
 
 function pulseResize() {
@@ -46,6 +47,7 @@ function runApp() {
     }
   }, function (window) {
     myWin = window;
+    myWin.moveTo(left, top);
     resize();
     var pulse = setInterval(pulseResize, 1000);
     setTimeout(function () {
@@ -69,12 +71,9 @@ function runApp() {
   });
 }
 
-chrome.app.runtime.onLaunched.addListener(runApp);
-chrome.app.runtime.onRestarted.addListener(runApp);
-
 function onPushMessage(msg) {
   console.debug('got push msg', msg);
-  chrome.runtime.sendMessage(runtimeId, {
+  chrome.runtime.sendMessage(chrome.runtime.id, {
     type: 'push',
     args: [msg]
   });
@@ -98,3 +97,5 @@ function showPushMessage(payload, subChannel) {
   );
   notification.show();
 }
+
+init();

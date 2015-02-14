@@ -25,7 +25,8 @@
     "chrome-dgram": "^2.0.5",
     "chrome-net": "^2.3.1",
     "concat-stream": "^1.4.7",
-    "mkdirp": "^0.5.0"
+    "mkdirp": "^0.5.0",
+    "q": "^1.1.2"
   },
   "devDependencies": {
     "brfs": "^1.2.0",
