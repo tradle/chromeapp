@@ -18,6 +18,19 @@ window.localStorage = {
 function init() {
   chrome.app.runtime.onLaunched.addListener(runApp);
   chrome.app.runtime.onRestarted.addListener(runApp);
+  chrome.commands.onCommand.addListener(function (command) {
+    if (myWin && command.indexOf('refresh-webview') === 0) {
+      myWin.contentWindow.document.querySelector('webview').reload();
+      fixSize();
+    }
+  });
+}
+
+function fixSize() {
+  var pulse = setInterval(pulseResize, 1000);
+  setTimeout(function () {
+    clearInterval(pulse);
+  }, 5000);
 }
 
 function resize() {
@@ -49,10 +62,7 @@ function runApp() {
     myWin = window;
     myWin.moveTo(left, top);
     resize();
-    var pulse = setInterval(pulseResize, 1000);
-    setTimeout(function () {
-      clearInterval(pulse);
-    }, 10000);
+    fixSize();
   });
 
   chrome.pushMessaging.getChannelId(true, function (message) {

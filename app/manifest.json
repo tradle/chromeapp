@@ -28,6 +28,15 @@
       ]
     }
   ],
+  "commands": {
+    "refresh-webview2": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Up",
+        "mac": "Command+Shift+Up"
+      },
+      "description": "Refresh embedded webview"
+    }
+  },
   "sockets": {
     "udp": {
       "bind": "*",

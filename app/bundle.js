@@ -19,6 +19,19 @@ window.localStorage = {
 function init() {
   chrome.app.runtime.onLaunched.addListener(runApp);
   chrome.app.runtime.onRestarted.addListener(runApp);
+  chrome.commands.onCommand.addListener(function(command) {
+    if (myWin && command.indexOf('refresh-webview') === 0) {
+      myWin.contentWindow.document.querySelector('webview').reload();
+      fixSize();
+    }
+  });
+}
+
+function fixSize() {
+  var pulse = setInterval(pulseResize, 1000);
+  setTimeout(function () {
+    clearInterval(pulse);
+  }, 5000);
 }
 
 function resize() {
@@ -50,10 +63,7 @@ function runApp() {
     myWin = window;
     myWin.moveTo(left, top);
     resize();
-    var pulse = setInterval(pulseResize, 1000);
-    setTimeout(function () {
-      clearInterval(pulse);
-    }, 10000);
+    fixSize();
   });
 
   chrome.pushMessaging.getChannelId(true, function (message) {
@@ -100,6 +110,7 @@ function showPushMessage(payload, subChannel) {
 }
 
 init();
+
 },{"./lib/controller":6,"mkdirp":703}],2:[function(require,module,exports){
 module.exports={
   "wallet": {
@@ -286,20 +297,10 @@ var connected;
 var serverOrigin;
 var appHome;
 var webviewOrigin;
-var isLoading = false;
-var SHOW_BUTTONS;
 //  visibilityState,
 
 /* START HTML elements / JQuery objects */
 var webview;
-var controls;
-var locInput;
-var back;
-var forward;
-var home;
-var reload;
-var terminate;
-var locForm;
 
 chrome.runtime.getBackgroundPage(function (page) {
   bgPage = page;
@@ -532,136 +533,19 @@ function navigateTo(url) {
   webview.src = url;
 }
 
-function doLayout() {
-  var controlsHeight = controls ? controls.offsetHeight : 0;
-  var windowWidth = doc.documentElement.clientWidth;
-  var windowHeight = doc.documentElement.clientHeight;
-  var webviewWidth = windowWidth;
-  var webviewHeight = windowHeight - controlsHeight;
-
-  webview.style.width = webviewWidth + 'px';
-  webview.style.height = webviewHeight + 'px';
-  //    $webview.css('z-index', 1);
-
-  // var sadWebview = $('#sad-webview');
-  // sadWebview.style.width = webviewWidth + 'px';
-  // sadWebview.style.height = webviewHeight * 2/3 + 'px';
-  // sadWebview.style.paddingTop = webviewHeight/3 + 'px';
-}
-
-function handleExit(event) {
-  console.log(event.type);
-  doc.body.classList.add('exited');
-  if (event.type == 'abnormal') {
-    doc.body.classList.add('crashed');
-  } else if (event.type == 'killed') {
-    doc.body.classList.add('killed');
-  }
-
-  navigateTo(appHome);
-}
-
-function resetExitedState() {
-  doc.body.classList.remove('exited');
-  doc.body.classList.remove('crashed');
-  doc.body.classList.remove('killed');
-}
-
-function handleLoadCommit(event) {
-  resetExitedState();
-  if (!event.isTopLevel) {
-    locInput.value = webview.src;
-    return;
-  }
-
-  locInput.value = event.url || webview.src;
-
-  back.disabled = !webview.canGoBack();
-  forward.disabled = !webview.canGoForward();
-}
-
-function handleLoadStart(event) {
-  doc.body.classList.add('loading');
-  isLoading = true;
-
-  resetExitedState();
-  if (!event.isTopLevel) {
-    locInput.value = webview.src;
-    return;
-  }
-
-  //    var url = event.url,
-  //        parsed = parseUrl(url);
-  //
-  //    if (!parsed.params) {
-  //      url += '?-webview=y';
-  //      navigateTo(url);
-  //      return false;
-  //    }
-  //    else if (parsed.params && !parsed.params['-webview']) {
-  //      url += '&-webiew=y';
-  //      navigateTo(url);
-  //      return false;
-  //    }
-
-  locInput.value = event.url;
-}
-
-//  function parseUrl(url) {
-//    var a = document.createElement('a');
-//    a.href = url;
-//    var q = a.search;
-//    if (q) {
-//      q = q.split('&');
-//      a.params = {};
-//      q.forEach(function(keyVal) {
-//        keyVal = keyVal.split('=').map(decodeURIComponent);
-//        a.params[keyVal[0]] = keyVal[1];
-//      });
-//    }
-//
-//    return a;
-//  }
-
-function handleLoadStop(event) {
-  // We don't remove the loading class immediately, instead we let the animation
-  // finish, so that the spinner doesn't jerkily reset back to the 0 position.
-  isLoading = false;
-}
-
-function handleLoadAbort(event) {
-  console.log('  loadAbort');
-  console.log('  url: ' + event.url);
-  console.log('  isTopLevel: ' + event.isTopLevel);
-  console.log('  type: ' + event.type);
-}
-
-function handleLoadRedirect(event) {
-  resetExitedState();
-  if (!event.isTopLevel) {
-    return;
-  }
-
-  locInput.value = event.newUrl;
-}
-
 window.onload = function onload() {
   webview = $('#webview');
   if (!webview) return;
 
-  window.onresize = doLayout;
-  controls = $('#controls');
-  SHOW_BUTTONS = !!controls;
-  if (SHOW_BUTTONS) setupNavbar();
-
   appHome = webview.src;
   serverOrigin = appHome.slice(0, appHome.indexOf('/', 8)); // cut off http(s)://
   webviewOrigin = serverOrigin + "/*";
-  doLayout();
-
-  webview.addEventListener('exit', handleExit);
 
   // send channelId on every loadstop, as we have a one page app and it needs channelId every time the page is reloaded
+  window.addEventListener('loadstart', function() {
+    connected = false;
+  });
+
   webview.addEventListener('loadstop', function () {
     var pingInterval = setInterval(function () {
       if (connected) {
@@ -716,61 +600,6 @@ window.onload = function onload() {
     //   window.open(info.txInfo.txUrl);
     // }
   });
-}
-
-function setupNavbar() {
-  back = $('#back');
-  forward = $('#forward');
-  reload = $('#reload');
-  home = $('#home');
-  terminate = $('#terminate');
-  locInput = $('#location');
-  locForm = $('#location-form');
-
-  back.onclick = function () {
-    webview.back();
-  };
-
-  forward.onclick = function () {
-    webview.forward();
-  }
-
-  home.onclick = function () {
-    navigateTo(appHome);
-  };
-
-  reload.onclick = function () {
-    if (isLoading) {
-      webview.stop();
-    } else {
-      webview.reload();
-    }
-  };
-
-  reload.addEventListener(
-    'webkitAnimationIteration',
-    function () {
-      if (!isLoading) {
-        doc.body.classList.remove('loading');
-      }
-    }
-  );
-
-  terminate.onclick = function () {
-    webview.terminate();
-  };
-
-  locForm.onsubmit = function (e) {
-    e.preventDefault();
-    navigateTo(locInput.value);
-  };
-
-  locInput.value = webview.src;
-  webview.addEventListener('loadstart', handleLoadStart);
-  webview.addEventListener('loadstop', handleLoadStop);
-  webview.addEventListener('loadabort', handleLoadAbort);
-  webview.addEventListener('loadredirect', handleLoadRedirect);
-  webview.addEventListener('loadcommit', handleLoadCommit);
 }
 
 window.addEventListener('message', function (e) {
@@ -871,39 +700,22 @@ var Q = require('q');
 var SIGNING_APP_ID = require('../conf/signing-app').id;
 var blacklistedIds = [];
 
-// chrome.runtime.onMessageExternal.addListener(function(request, sender, respond) {
-//   if (blacklistedIds.indexOf(sender.id)) {
-//     respond({
-//       error: {
-//         code: 401
-//       }
-//     });
-
-//     return; // don't allow this extension access
-//   } else if (request.document) {
-//     // appendLog('from ' + sender.id + ': ' + request.myCustomMessage);
-//     respond({
-//       result: 'Ok, got your message'
-//     });
-//   } else {
-//     respond({
-//       result: 'Oops, I don\'t understand this message'
-//     });
-//   }
-// });
-
-function sign(data) {
+function sign(data, appName) {
   var deferred = Q.defer();
+  var msg = {
+    type: 'sign',
+    doc: data,
+    forApp: {
+      name: 'paranoid'
+    },
+    fromApp: {
+      name: appName || 'Tradle'
+    }
+  };
 
   chrome.runtime.sendMessage(
     SIGNING_APP_ID, // signing app
-    {
-      type: 'sign',
-      forApp: 'paranoid',
-      data: {
-        doc: data
-      }
-    },
+    msg,
     function (response) {
       if (response.error) deferred.reject(response.error);
       else deferred.resolve(response);
@@ -911,6 +723,15 @@ function sign(data) {
   )
 
   return deferred.promise;
+}
+
+function clone(obj) {
+  var copy = {};
+  for (var p in obj) {
+    if (obj.hasOwnProperty(p)) copy[p] = obj[p];
+  }
+
+  return copy;
 }
 
 module.exports = {
