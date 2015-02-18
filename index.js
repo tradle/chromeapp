@@ -18,8 +18,10 @@ window.localStorage = {
 function init() {
   chrome.app.runtime.onLaunched.addListener(runApp);
   chrome.app.runtime.onRestarted.addListener(runApp);
-  chrome.commands.onCommand.addListener(function (command) {
-    if (myWin && command.indexOf('refresh-webview') === 0) {
+  chrome.commands.onCommand.addListener(function(command) {
+    if (!myWin) return;
+
+    if (command.indexOf('refresh-webview') === 0) {
       myWin.contentWindow.document.querySelector('webview').reload();
       fixSize();
     }
@@ -28,7 +30,7 @@ function init() {
 
 function fixSize() {
   var pulse = setInterval(pulseResize, 1000);
-  setTimeout(function () {
+  setTimeout(function() {
     clearInterval(pulse);
   }, 5000);
 }
@@ -48,6 +50,13 @@ function pulseResize() {
   resize();
 }
 
+function setChild(window) {
+  myWin = window;
+  myWin.moveTo(left, top);
+  resize();
+  fixSize();
+}
+
 function runApp() {
   // Do the normal setup steps every time the app starts, listen for events.
   // setupPush();
@@ -58,14 +67,9 @@ function runApp() {
       top: top,
       left: left
     }
-  }, function (window) {
-    myWin = window;
-    myWin.moveTo(left, top);
-    resize();
-    fixSize();
-  });
+  }, setChild);
 
-  chrome.pushMessaging.getChannelId(true, function (message) {
+  chrome.pushMessaging.getChannelId(true, function(message) {
     channelId = message.channelId;
     var evt = document.createEvent("Event");
     evt.initEvent("gotChannelId", true, true);
