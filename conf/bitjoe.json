@@ -4,6 +4,7 @@
     "path": "wallet/wallet.wallet",
     "password": "changeme"
   },
+  "autofund": 10000,
   "prefix": "tradle",
   "maxDataBytes": 40,
   "networkName": "testnet",
