@@ -1,4 +1,4 @@
-#!/bin/node
+#!/usr/bin/env node
 
 var ncp = require('ncp');
 var fs = require('fs');
@@ -17,6 +17,7 @@ var rimraf = require('rimraf');
 
       var mPath = path.resolve('build/' + lower + '/manifest.json');
       var manifest = require(mPath);
+      manifest.icons['128'] = manifest.icons['128'].replace('Logo', name);
       manifest.name += ' ' + name;
       fs.writeFile(mPath, JSON.stringify(manifest, null, 2));
     });
