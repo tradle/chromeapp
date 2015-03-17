@@ -81,19 +81,6 @@ module.exports = function(grunt) {
         dest: 'app/bundle.css'
       }
     },
-    copy: {
-      app: {
-        files: [
-          // includes files within path
-          {
-            cwd: 'app',
-            expand: true,
-            src: ['**/*'],
-            dest: 'appCopy/'
-          }
-        ],
-      }
-    },
     jsbeautifier: {
       options: {
         config: '.jsbeautifyrc'
