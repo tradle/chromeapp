@@ -31,6 +31,7 @@ function setChild(window) {
   myWin = window;
   myWin.contentWindow.addEventListener('load', function() {
     var webview = myWin.contentWindow.document.querySelector('webview');
+    webview.setUserAgentOverride(webview.getUserAgent() + ' in a webview');
     webview.addEventListener('loadstop', function() {
       // chrome has a weird bug with opacity 0.99999 + transforms, and resizing fixes the stacking contexts once and for all
       console.log('resizing webview to hack-fix chrome\'s stacking context bug');
