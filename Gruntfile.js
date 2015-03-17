@@ -59,7 +59,7 @@ module.exports = function(grunt) {
       'index.html',
       'app/index.html', {
         APP_TITLE: appName,
-        APP_HOME: 'http://tradle.io/app/KYC/home/',
+        APP_HOME: 'http://tradle.io/app/KYC/home/?-webview=y',
         DEBUG: DEBUG
       }
     );
