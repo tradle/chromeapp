@@ -10,29 +10,33 @@ module.exports = function(name, pubkey, callback) {
   var lower = name.toLowerCase();
   var copyPath = path.resolve('build/' + lower);
 
+  function toAppPath(p) {
+    return p.replace('app', 'build/' + lower);
+  }
+
   rimraf(copyPath, function(err) {
-    if (err) return console.log(err);
+    if (err) return callback(err);
 
     ncp('app', copyPath, function(err) {
-      if (err) return console.log(err);
+      if (err) return callback(err);
 
-      var htmlPath = path.resolve('build/' + lower + '/index.html');
+      var htmlPath = path.resolve('app/index.html');
       var html = fs.readFileSync(htmlPath);
       var $ = cheerio.load(html);
       var webview = $('webview');
       var src = webview.attr('src');
       webview.attr('src', src + '&-pubkey=' + pubkey);
-      fs.writeFileSync(htmlPath, $.html());
+      fs.writeFileSync(toAppPath(htmlPath), $.html());
 
-      var mPath = path.resolve('build/' + lower + '/manifest.json');
-      var manifest = require(mPath);
+      var mPath = path.resolve('app/manifest.json');
+      var manifest = JSON.parse(fs.readFileSync(mPath));
       var icon = manifest.icons['128'].replace('Logo', name);
-      if (fs.existsSync(path.resolve('build/' + icon))) {
+      if (fs.existsSync(path.resolve('app/' + icon))) {
         manifest.icons['128'] = icon;
       }
 
       manifest.name += ' ' + name;
-      fs.writeFile(mPath, JSON.stringify(manifest, null, 2));
+      fs.writeFileSync(toAppPath(mPath), JSON.stringify(manifest, null, 2));
       callback();
     });
   });

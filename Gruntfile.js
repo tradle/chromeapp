@@ -3,7 +3,6 @@ var fs = require('fs');
 var browserify = require('browserify');
 var makeSample = require('./build-sample');
 var path = require('path');
-console.log(path.resolve('keys/jane.pem'))
 
 module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);

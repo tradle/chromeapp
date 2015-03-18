@@ -9,14 +9,16 @@
     "128": "Logo-128.png"
   },
   "app": {
-  	"background": {
-      "scripts": ["bundle.js"]
+    "background": {
+      "scripts": [
+        "bundle.js"
+      ]
     }
   },
   "permissions": [
     "webview",
-  	"pushMessaging",
-  	"notifications",
+    "pushMessaging",
+    "notifications",
     "http://*/*",
     "storage",
     "unlimitedStorage",
