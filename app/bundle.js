@@ -24,38 +24,21 @@ function init() {
 
     if (command.indexOf('refresh-webview') === 0) {
       myWin.contentWindow.document.querySelector('webview').reload();
-      fixSize();
     }
   });
 }
 
-function fixSize() {
-  var pulse = setInterval(pulseResize, 1000);
-  setTimeout(function() {
-    clearInterval(pulse);
-  }, 5000);
-}
-
-function resize() {
-  myWin.resizeTo(width, height);
-}
-
-function pulseResize() {
-  // chrome has a weird bug with opacity 0.99999 + transforms, and resizing fixes the stacking contexts once and for all
-  console.log('Pulse resizing');
-  width--;
-  height--;
-  resize();
-  width++;
-  height++;
-  resize();
-}
-
 function setChild(window) {
   myWin = window;
-  myWin.moveTo(left, top);
-  resize();
-  fixSize();
+  myWin.contentWindow.addEventListener('load', function() {
+    var webview = myWin.contentWindow.document.querySelector('webview');
+    webview.setUserAgentOverride(webview.getUserAgent() + ' in a webview');
+    webview.addEventListener('loadstop', function() {
+      // chrome has a weird bug with opacity 0.99999 + transforms, and resizing fixes the stacking contexts once and for all
+      console.log('resizing webview to hack-fix chrome\'s stacking context bug');
+      webview.style.height = '100%';
+    })
+  });
 }
 
 function runApp() {
@@ -114,7 +97,6 @@ function showPushMessage(payload, subChannel) {
 }
 
 init();
-
 
 },{"./lib/controller":6,"mkdirp":714}],2:[function(require,module,exports){
 module.exports={
@@ -578,8 +560,8 @@ function getCallback(eventName) {
   }
 }
 
-window.onload = function onload() {
-  webview = $('#webview');
+window.addEventListener('load', function onload() {
+  webview = $('webview');
   if (!webview) return;
 
   appHome = webview.src;
@@ -587,7 +569,7 @@ window.onload = function onload() {
   webviewOrigin = serverOrigin + "/*";
 
   // send channelId on every loadstop, as we have a one page app and it needs channelId every time the page is reloaded
-  window.addEventListener('loadstart', function() {
+  webview.addEventListener('loadstart', function() {
     connected = false;
   });
 
@@ -645,7 +627,7 @@ window.onload = function onload() {
     //   window.open(info.txInfo.txUrl);
     // }
   });
-}
+});
 
 window.addEventListener('message', function(e) {
   if (e.origin !== serverOrigin) return;
@@ -750,7 +732,7 @@ function sign(msg) {
   msg = clone(msg);
   msg.type = 'sign';
   msg.forApp = {
-    name: 'paranoid'
+    name: 'Signy'
   };
 
   msg.fromApp = {
