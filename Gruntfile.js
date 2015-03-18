@@ -1,6 +1,9 @@
 var preprocess = require('preprocess');
 var fs = require('fs');
 var browserify = require('browserify');
+var makeSample = require('./build-sample');
+var path = require('path');
+console.log(path.resolve('keys/jane.pem'))
 
 module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
@@ -8,19 +11,23 @@ module.exports = function(grunt) {
   var DEBUG = !!grunt.option('debug');
   var pkgJson = grunt.file.readJSON('package.json');
   var appName = pkgJson.name;
-  var appUrl = pkgJson.url + '?-webview=y';
+  // var appUrl = pkgJson.url + '?-webview=y';
 
   grunt.registerTask('setup', [
     'githooks'
   ]);
 
-  grunt.registerTask('default', ['build']);
+  grunt.registerTask('samples', function() {
+    var done = this.async();
+    var togo = 2;
 
-  grunt.registerTask('build', [
-    'preprocess',
-    'concat',
-    'browserify'
-  ]);
+    makeSample('Jane', 1, finish);
+    makeSample('Kate', 2, finish);
+
+    function finish() {
+      if (--togo === 0) done();
+    }
+  });
 
   grunt.registerTask('renameCopy', function() {
     var manifest = grunt.file.readJSON('app/manifest.json');
@@ -51,7 +58,7 @@ module.exports = function(grunt) {
       // .transform('brfs')
       .bundle()
       .pipe(fs.createWriteStream('app/bundle.js'))
-      .on('end', done);
+      .on('close', done);
   });
 
   grunt.registerTask('preprocess', function() {
@@ -59,7 +66,7 @@ module.exports = function(grunt) {
       'index.html',
       'app/index.html', {
         APP_TITLE: appName,
-        APP_HOME: 'http://tradle.io/app/KYC/home/?-webview=y',
+        APP_HOME: 'http://tradle.io/app/KYC/home/?-webview=y' + (DEBUG ? '&-min=n' : ''),
         DEBUG: DEBUG
       }
     );
@@ -110,6 +117,30 @@ module.exports = function(grunt) {
       default: {
         src: ['Gruntfile.js', 'index.js', 'lib/**/*.js']
       }
+    },
+    crx: {
+      jane: {
+        src: 'build/jane',
+        dest: 'build/jane.crx',
+        privateKey: 'keys/jane.pem'
+      },
+      kate: {
+        src: 'build/kate',
+        dest: 'build/kate.crx',
+        privateKey: 'keys/kate.pem'
+      }
     }
   });
+
+  grunt.registerTask('build', [
+    'preprocess',
+    'concat',
+    'browserify'
+  ]);
+
+  grunt.registerTask('default', [
+    'build',
+    'samples',
+    'crx'
+  ]);
 }
