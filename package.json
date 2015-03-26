@@ -17,10 +17,9 @@
     "dns": "dns.js"
   },
   "dependencies": {
-    "asap": "^2.0.1",
     "bitjoe-js": "git://github.com/tradle/bitjoe-js",
     "bitkeeper-js": "git://github.com/tradle/bitkeeper-js",
-    "bittorrent-dht": "^2.6.4",
+    "bittorrent-dht": "git://github.com/tradle/bittorrent-dht",
     "browser-request": "^0.3.3",
     "browserify-fs": "^1.0.0",
     "chrome-dgram": "^2.0.5",
