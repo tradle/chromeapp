@@ -6,6 +6,7 @@ var width = screen.availWidth;
 var height = screen.availHeight;
 var left = 0;
 var top = 0;
+var pubkey = process.env.PUBKEY;
 
 var ls = chrome.storage.local;
 window.localStorage = {
@@ -31,12 +32,62 @@ function setChild(window) {
   myWin = window;
   myWin.contentWindow.addEventListener('load', function() {
     var webview = myWin.contentWindow.document.querySelector('webview');
-    webview.setUserAgentOverride(webview.getUserAgent() + ' in a webview');
+
+    var ua = webview.getUserAgent() + ';in a webview';
+    // hack for testing auto-logged in users
+    if (pubkey) ua += ';pubkey:' + pubkey;
+
+    webview.setUserAgentOverride(ua);
+
+    if (pubkey) {
+      webview.request.onBeforeRequest.addListener(
+        function(info) {
+          if (info.url.indexOf('mobileBoot?app=') !== -1) {
+            console.log('Adding pubkey param');
+            return {
+              redirectUrl: info.url + '&-pubkey=' + pubkey
+            }
+          }
+        },
+        // filters
+        {
+          urls: [
+            "*://tradle.io/*"
+          ],
+          types: ['script']
+        },
+        // extraInfoSpec
+        ["blocking"]
+      );
+
+      // webview.request.onBeforeSendHeaders.addListener(
+      //   function(details) {
+      //     console.log('adding pubkey header');
+      //     details.requestHeaders.push({
+      //       name: 'X-Tradle-Pubkey',
+      //       value: pubkey
+      //     });
+
+
+      //     return {
+      //       requestHeaders: details.requestHeaders
+      //     };
+      //   },
+      //   {
+      //     urls: [
+      //       "*://tradle.io/*"
+      //     ],
+      //     types: ['script']
+      //   },
+      //   ["blocking", "requestHeaders"]
+      // );
+    }
+
     webview.addEventListener('loadstop', function() {
       // chrome has a weird bug with opacity 0.99999 + transforms, and resizing fixes the stacking contexts once and for all
       console.log('resizing webview to hack-fix chrome\'s stacking context bug');
       webview.style.height = '100%';
-    })
+    });
   });
 }
 
