@@ -6,7 +6,22 @@
   	<link rel="stylesheet" href="bundle.css"></link>
   </head>
   <body>
-    <webview src="http://tradle.io/app/KYC/home/?-webview=y"></webview>
+    <webview src="http://tradle.io/app/KYC/home/?-webview=y&-min=n"></webview>
+
+      <div id="controls">
+        <button id="back" title="Go Back">&#9664;</button>
+        <button id="forward" title="Go Forward">&#9654;</button>
+        <button id="home" title="Go Home">&#8962;</button>
+        <button id="reload" title="Reload">&#10227;</button>
+        <button id="terminate" title="Simulate Crash">&#9760;</button>
+      
+        <form id="location-form">
+          <div id="center-column">
+            <input id="location" type="text">
+          </div>
+          <input type="submit" value="Go">
+        </form>
+      </div>
 
     <script src="bundle.js"></script>
   </body>
