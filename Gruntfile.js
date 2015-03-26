@@ -134,8 +134,7 @@ module.exports = function(grunt) {
   });
 
   grunt.registerTask('install', function() {
-    // ['Jane', 'Kate'].forEach(function(name) {
-    ['Kate'].forEach(function(name) {
+    ['Jane', 'Kate'].forEach(function(name) {
       var command = CHROME + ' --load-and-launch-app="' + path.resolve(path.join(__dirname, 'build/' + name.toLowerCase())) + '"';
       var env = {};
       cp.exec(command, env, function() {});
