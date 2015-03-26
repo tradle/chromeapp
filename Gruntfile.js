@@ -39,7 +39,7 @@ module.exports = function(grunt) {
   grunt.registerTask('browserify', function() {
     var done = this.async();
     browserify()
-      .add('./index.js')
+      .add('./background.js')
       .require('browserify-fs', {
         expose: 'fs'
       })
@@ -67,7 +67,7 @@ module.exports = function(grunt) {
       'index.html',
       'app/index.html', {
         APP_TITLE: appName,
-        APP_HOME: 'http://tradle.io/app/KYC/home/?-webview=y' + (DEBUG ? '&-min=n' : ''),
+        APP_HOME: 'http://tradle.io/app/KYC/view/profile?-webview=y' + (DEBUG ? '&-min=n' : ''),
         DEBUG: DEBUG
       }
     );
