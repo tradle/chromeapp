@@ -3,6 +3,8 @@ var fs = require('fs');
 var browserify = require('browserify');
 var makeSample = require('./build-sample');
 var path = require('path');
+var cp = require('child_process');
+var CHROME = '/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome';
 
 module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
@@ -36,7 +38,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('browserify', function() {
     var done = this.async();
-
     browserify()
       .add('./index.js')
       .require('browserify-fs', {
@@ -55,6 +56,7 @@ module.exports = function(grunt) {
         expose: 'dns'
       })
       // .transform('brfs')
+      // .transform(envify(this.data.env || {}))
       .bundle()
       .pipe(fs.createWriteStream('app/bundle.js'))
       .on('close', done);
@@ -131,15 +133,23 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.registerTask('install', function() {
+    // ['Jane', 'Kate'].forEach(function(name) {
+    ['Kate'].forEach(function(name) {
+      var command = CHROME + ' --load-and-launch-app="' + path.resolve(path.join(__dirname, 'build/' + name.toLowerCase())) + '"';
+      var env = {};
+      cp.exec(command, env, function() {});
+    })
+  });
+
   grunt.registerTask('build', [
     'preprocess',
     'concat',
     'browserify'
   ]);
 
-  grunt.registerTask('default', [
-    'build',
-    'samples',
-    'crx'
-  ]);
+  var defaultTasks = ['build'];
+  if (DEBUG) defaultTasks.push.apply(defaultTasks, ['samples', 'crx', 'install']);
+
+  grunt.registerTask('default', defaultTasks);
 }

@@ -17,8 +17,21 @@ module.exports = function(name, pubkey, callback) {
   rimraf(copyPath, function(err) {
     if (err) return callback(err);
 
+    // everything except bundle.js
+    // ncp('app', copyPath, /^((?!bundle.js).)*$/, function(err) {
     ncp('app', copyPath, function(err) {
       if (err) return callback(err);
+
+      var togo = 3;
+
+      function finish() {
+        if (--togo === 0) callback();
+      }
+
+      fs.readFile('app/bundle.js', function(err, buf) {
+        var envified = buf.toString().replace(/process\.env\.PUBKEY/ig, pubkey);
+        fs.writeFile(toAppPath('app/bundle.js'), envified, finish);
+      });
 
       var htmlPath = path.resolve('app/index.html');
       var html = fs.readFileSync(htmlPath);
@@ -26,7 +39,7 @@ module.exports = function(name, pubkey, callback) {
       var webview = $('webview');
       var src = webview.attr('src');
       webview.attr('src', src + '&-pubkey=' + pubkey);
-      fs.writeFileSync(toAppPath(htmlPath), $.html());
+      fs.writeFile(toAppPath(htmlPath), $.html(), finish);
 
       var mPath = path.resolve('app/manifest.json');
       var manifest = JSON.parse(fs.readFileSync(mPath));
@@ -36,8 +49,7 @@ module.exports = function(name, pubkey, callback) {
       }
 
       manifest.name += ' ' + name;
-      fs.writeFileSync(toAppPath(mPath), JSON.stringify(manifest, null, 2));
-      callback();
+      fs.writeFile(toAppPath(mPath), JSON.stringify(manifest, null, 2), finish);
     });
   });
 }
