@@ -32,9 +32,11 @@ function setChild(window) {
     webview.setUserAgentOverride(ua);
 
     if (pubkey) {
+      var urls = [ '*://tradle.io/*' ];
       webview.request.onBeforeRequest.addListener(
         function(info) {
-          if (info.url.indexOf('mobileBoot?app=') !== -1 &&
+          console.log(info.url);
+          if (info.url.indexOf('boot.js?app=') !== -1 &&
               info.url.indexOf('-pubkey') === -1) {
             console.log('Adding pubkey param');
             return {
@@ -44,36 +46,30 @@ function setChild(window) {
         },
         // filters
         {
-          urls: [
-            "*://tradle.io/*"
-          ],
+          urls: urls,
           types: ['script']
         },
         // extraInfoSpec
-        ["blocking"]
+        ['blocking']
       );
 
-      // webview.request.onBeforeSendHeaders.addListener(
-      //   function(details) {
-      //     console.log('adding pubkey header');
-      //     details.requestHeaders.push({
-      //       name: 'X-Tradle-Pubkey',
-      //       value: pubkey
-      //     });
+      var requestFilter = {
+        urls: ['<all_urls>']
+      };
 
+      var extraInfoSpec = ['requestHeaders', 'blocking'];
+      webview.request.onBeforeSendHeaders.addListener(function(details) {
+        console.log('adding pubkey header');
+        var headers = details.requestHeaders.slice();
+        headers.push({
+          name: 'x-tradle-pubkey',
+          value: pubkey
+        });
 
-      //     return {
-      //       requestHeaders: details.requestHeaders
-      //     };
-      //   },
-      //   {
-      //     urls: [
-      //       "*://tradle.io/*"
-      //     ],
-      //     types: ['script']
-      //   },
-      //   ["blocking", "requestHeaders"]
-      // );
+        return {
+          requestHeaders: headers
+        }
+      }, requestFilter, extraInfoSpec);
     }
   });
 }
