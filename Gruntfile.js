@@ -30,12 +30,6 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('renameCopy', function() {
-    var manifest = grunt.file.readJSON('app/manifest.json');
-    manifest.name += '2';
-    grunt.file.write('appCopy/manifest.json', JSON.stringify(manifest, null, 2));
-  });
-
   grunt.registerTask('browserify', function() {
     var done = this.async();
     browserify()
@@ -130,7 +124,41 @@ module.exports = function(grunt) {
         dest: 'build/kate.crx',
         privateKey: 'keys/kate.pem'
       }
+    },
+    compress: {
+      jane: {
+        options: {
+          archive: 'build/jane.zip'
+        },
+        files: [{
+          expand: true,
+          cwd: 'build/jane/',
+          src: ['./**'],
+          dest: '.',
+          filter: 'isFile'
+        }]
+      },
+      kate: {
+        options: {
+          archive: 'build/kate.zip'
+        },
+        files: [{
+          expand: true,
+          cwd: 'build/kate/',
+          src: ['./**'],
+          dest: '.',
+          filter: 'isFile'
+        }]
+      }
     }
+  });
+
+  grunt.registerTask('manifest', function() {
+    var manifest = grunt.file.readJSON('app/manifest.json');
+    var parts = manifest.version.split('.');
+    parts[parts.length - 1]++;
+    manifest.version = parts.join('.');
+    grunt.file.write('app/manifest.json', JSON.stringify(manifest, null, 2));
   });
 
   grunt.registerTask('install', function() {
@@ -145,10 +173,18 @@ module.exports = function(grunt) {
     'preprocess',
     'concat',
     'browserify'
+    // ,
+    // 'manifest'
   ]);
 
   var defaultTasks = ['build'];
-  if (DEBUG) defaultTasks.push.apply(defaultTasks, ['samples', 'crx', 'install']);
+  if (DEBUG) defaultTasks.push.apply(defaultTasks, [
+    'samples',
+    'crx',
+    'compress:jane',
+    'compress:kate',
+    'install'
+  ]);
 
   grunt.registerTask('default', defaultTasks);
 }
