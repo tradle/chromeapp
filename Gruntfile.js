@@ -172,9 +172,8 @@ module.exports = function(grunt) {
   grunt.registerTask('build', [
     'preprocess',
     'concat',
-    'browserify'
-    // ,
-    // 'manifest'
+    'browserify',
+    'manifest'
   ]);
 
   var defaultTasks = ['build'];
