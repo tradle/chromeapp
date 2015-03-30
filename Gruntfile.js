@@ -5,6 +5,12 @@ var makeSample = require('./build-sample');
 var path = require('path');
 var cp = require('child_process');
 var CHROME = '/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome';
+var WEB_STORE_CREDENTIALS;
+try {
+  WEB_STORE_CREDENTIALS = require('./webstore-credentials.json');
+} catch (err) {
+  WEB_STORE_CREDENTIALS = {};
+}
 
 module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
@@ -150,6 +156,32 @@ module.exports = function(grunt) {
           filter: 'isFile'
         }]
       }
+    },
+    webstore_upload: {
+      accounts: {
+        default: {
+          // publish item right after uploading. default false
+          publish: true,
+          client_id: WEB_STORE_CREDENTIALS.client_id,
+          client_secret: WEB_STORE_CREDENTIALS.client_secret
+        }
+      },
+      extensions: {
+        jane: {
+          publish: true,
+          //required
+          appID: 'mdemnfamnpjacheflfpbeoegofpkbmjo',
+          //required, we can use dir name and upload most recent zip file
+          zip: 'build/jane.zip'
+        },
+        kate: {
+          publish: true,
+          //required
+          appID: 'mcbgabjhbndmpnbcjkdclmejbapadaim',
+          //required, we can use dir name and upload most recent zip file
+          zip: 'build/kate.zip'
+        }
+      }
     }
   });
 
@@ -172,8 +204,9 @@ module.exports = function(grunt) {
   grunt.registerTask('build', [
     'preprocess',
     'concat',
-    'browserify',
-    'manifest'
+    'browserify'
+    // ,
+    // 'manifest'
   ]);
 
   var defaultTasks = ['build'];
@@ -183,6 +216,14 @@ module.exports = function(grunt) {
     'compress:jane',
     'compress:kate',
     'install'
+  ]);
+
+  grunt.registerTask('publish', [
+    'manifest',
+    'samples',
+    'compress:jane',
+    'compress:kate',
+    'webstore_upload'
   ]);
 
   grunt.registerTask('default', defaultTasks);
