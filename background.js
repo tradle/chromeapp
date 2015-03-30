@@ -63,7 +63,7 @@ function setChild(window) {
         var headers = details.requestHeaders.slice();
         headers.push({
           name: 'x-tradle-pubkey',
-          value: pubkey
+          value: '' + pubkey
         });
 
         return {
